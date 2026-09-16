@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, CheckCircle2, Factory, Bird, Building2, Package, Download, Phone, Loader2, Award } from 'lucide-react';
+import { Settings, CheckCircle2, Factory, Bird, Building2, Package, Download, Phone, Lightbulb } from 'lucide-react';
 import { products } from './data';
 import { Product } from './types';
 
 const CoverPage: React.FC = () => {
   return (
     <div 
-      className="relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
+      className="catalog-page-shell relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
       style={{
         width: 'calc(794px * var(--page-scale, 1))',
         height: 'calc(1123px * var(--page-scale, 1))',
-        marginBottom: '2rem'
+        marginBottom: 'var(--page-mb, 2rem)'
       }}
     >
       <div 
@@ -87,11 +87,11 @@ const CoverPage: React.FC = () => {
 const AboutPage: React.FC = () => {
   return (
     <div 
-      className="relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
+      className="catalog-page-shell relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
       style={{
         width: 'calc(794px * var(--page-scale, 1))',
         height: 'calc(1123px * var(--page-scale, 1))',
-        marginBottom: '2rem'
+        marginBottom: 'var(--page-mb, 2rem)'
       }}
     >
       <div 
@@ -108,45 +108,45 @@ const AboutPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-[190px] px-16 flex flex-col">
-          <div className="flex items-center gap-4 mb-8 justify-end flex-row-reverse">
+        <div className="pt-[150px] px-16 flex flex-col">
+          <div className="flex items-center gap-4 mb-6 justify-end flex-row-reverse">
              <h2 className="text-[#0C3068] text-[36px] font-black">درباره شرکت</h2>
              <div className="w-12 h-1.5 bg-[#F9B222] rounded-full"></div>
           </div>
 
-          <div className="grid grid-cols-[1.1fr_0.9fr] gap-12 items-center">
-            <div className="space-y-4 text-[#374151] leading-[2.1] font-medium text-[14px]" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-              <p style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                شرکت <span className="font-black text-[#0C3068]">طیوران صنعت پویا</span> به عنوان مشاور، طراح و مجری توسعه و بهره‌برداری پروژه‌های صنعتی، با بیش از ۵۰ سال تجربه درخشان در صنعت دام، طیور و آبزیان فعالیت می‌کند.
+          <div className="grid grid-cols-[1.15fr_0.85fr] gap-8 items-start">
+            <div className="space-y-3 text-[#374151] leading-[1.95] font-medium text-[13px]" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+              <p>
+                <span className="font-black text-[#0C3068]">طیوران صنعت پویا</span> با بیش از نیم قرن تجربه در صنعت دام، طیور و آبزیان، به‌عنوان مشاور، طراح و مجری پروژه‌های صنعتی، بیش از ۲۰۰ پروژه ملی و بین‌المللی را در کارنامه خود دارد.
               </p>
-              <p style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                ما با افتخار مجری بیش از ۲۰۰ پروژه ملی و بین‌المللی بوده‌ایم. ما تنها تولیدکننده بشقاب‌های پروانه‌ای تحت لیسانس Butterfly Concepts و تنها دارنده تاییدیه FDA آمریکا در منطقه هستیم و در زمینه تولید تخصصی جت هیتر و تجهیزات گرمایشی پیشگام می‌باشیم.
+              <p>
+                از طراحی و ساخت سازه‌های سبک و باکیفیت و سالن‌های مرغداری در سراسر کشور، تا تجهیز و راه‌اندازی کامل پروژه‌ها؛ از تولید و تأمین تجهیزات تخصصی مرغداری، تا طراحی و تولید ماشین‌آلات صنعتی با برند <span className="font-black text-[#0C3068]">IMACHINE</span> در صنعت خوراک.
               </p>
-              <p style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                <span className="font-black text-[#0C3068]">خدمات اصلی ما:</span> طراحی، ساخت و تجهیز کامل سوله و کارخانجات، تولید ماشین‌آلات خطوط تولید خوراک، تامین تجهیزات تخصصی مرغداری، تولید انواع خوراک، مکمل، روغن و دارو، و همچنین مشاوره توسعه و افزایش راندمان.
+              <p>
+                در کنار این تجربه صنعتی، توسعه فناوری‌های اختصاصی نیز بخشی از مسیر ماست؛ از جمله دانخوری پروانه‌ای پویا، به‌عنوان فناوری اختصاصی و انحصاری این مجموعه. امروز با تکیه بر تحقیق و توسعه، همکاری با مجموعه‌های فناور و دانش‌بنیان، و تفاهم‌نامه‌های همکاری با دانشگاه‌هایی همچون دانشگاه منابع طبیعی گلستان، در مسیر به‌کارگیری فناوری‌های نوین و ظرفیت‌های علمی کشور، از جمله هوش مصنوعی و تحلیل داده در صنعت طیور حرکت می‌کنیم.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#0C3068] p-5 rounded-[24px] flex flex-col items-center justify-center text-center text-white shadow-lg h-[150px]">
-                <Building2 size={32} className="text-[#F9B222] mb-3" />
-                <span className="font-black text-[18px]">نیم قرن تجربه</span>
-                <span className="text-[11px] opacity-80 mt-1 leading-tight">بیش از ۵۰ سال سابقه درخشان</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[#0C3068] p-4 rounded-[24px] flex flex-col items-center justify-center text-center text-white shadow-lg h-[138px]">
+                <Building2 size={28} className="text-[#F9B222] mb-2" />
+                <span className="font-black text-[16px]">نیم قرن تجربه</span>
+                <span className="text-[11px] opacity-80 mt-1 leading-tight">صنعت دام، طیور و آبزیان</span>
               </div>
-              <div className="bg-[#EAEAEA] p-5 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[150px]">
-                <CheckCircle2 size={32} className="text-[#0C3068] mb-3" />
-                <span className="font-black text-[18px]">۲۰۰+ پروژه</span>
-                <span className="text-[11px] opacity-80 mt-1 leading-tight">پروژه‌های موفق ملی و بین‌المللی</span>
+              <div className="bg-[#EAEAEA] p-4 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[138px]">
+                <CheckCircle2 size={28} className="text-[#0C3068] mb-2" />
+                <span className="font-black text-[16px]">۲۰۰+ پروژه</span>
+                <span className="text-[11px] opacity-80 mt-1 leading-tight">ملی و بین‌المللی</span>
               </div>
-              <div className="bg-[#EAEAEA] p-5 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[150px]">
-                <Award size={32} className="text-[#0C3068] mb-3" />
-                <span className="font-black text-[18px]">تاییدیه FDA</span>
-                <span className="text-[11px] opacity-80 mt-1 leading-tight">دارنده لیسانس Butterfly آمریکا</span>
+              <div className="bg-[#EAEAEA] p-4 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[138px]">
+                <Lightbulb size={28} className="text-[#0C3068] mb-2" />
+                <span className="font-black text-[15px] leading-tight">فناوری اختصاصی</span>
+                <span className="text-[11px] opacity-80 mt-1 leading-tight">دانخوری پروانه‌ای پویا</span>
               </div>
-              <div className="bg-[#F9B222] p-5 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[150px]">
-                <Factory size={32} className="text-[#0C3068] mb-3" />
-                <span className="font-black text-[18px]">تجهیز کامل</span>
-                <span className="text-[11px] opacity-80 mt-1 leading-tight">صفر تا صد ماشین‌آلات و تجهیزات</span>
+              <div className="bg-[#F9B222] p-4 rounded-[24px] flex flex-col items-center justify-center text-center text-[#0C3068] shadow-lg h-[138px]">
+                <Factory size={28} className="text-[#0C3068] mb-2" />
+                <span className="font-black text-[16px]">تجهیز کامل</span>
+                <span className="text-[11px] opacity-80 mt-1 leading-tight">سالن، تجهیزات و ماشین‌آلات</span>
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ const AboutPage: React.FC = () => {
                      <Phone size={18} className="text-[#F9B222]" />
                      <span className="text-[13px] opacity-80">همراه:</span>
                   </div>
-                  <span className="font-bold tracking-widest text-[16px] text-left" dir="ltr">۰۹۱۱ ۵۱۱ ۶۲۵۸</span>
+                  <span className="font-bold tracking-widest text-[16px] text-left" dir="ltr">+۹۸ ۹۱۵ ۱۱۲ ۶۲۵۸</span>
                 </div>
                 <div className="w-full h-[1px] bg-white/20"></div>
                 <div className="flex items-center justify-center">
@@ -226,11 +226,11 @@ const AboutPage: React.FC = () => {
 const TocPage: React.FC<{ items: Product[], startIndex: number, pageNum: number, totalTocPages: number }> = ({ items, startIndex, pageNum, totalTocPages }) => {
   return (
     <div 
-      className="relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
+      className="catalog-page-shell relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
       style={{
         width: 'calc(794px * var(--page-scale, 1))',
         height: 'calc(1123px * var(--page-scale, 1))',
-        marginBottom: '2rem'
+        marginBottom: 'var(--page-mb, 2rem)'
       }}
     >
       <div 
@@ -315,11 +315,11 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
   return (
     <div 
       id={`page-${pageNum}`}
-      className="relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
+      className="catalog-page-shell relative mx-auto shrink-0 print:block print:w-auto print:h-auto print:m-0"
       style={{
         width: 'calc(794px * var(--page-scale, 1))',
         height: 'calc(1123px * var(--page-scale, 1))',
-        marginBottom: '2rem'
+        marginBottom: 'var(--page-mb, 2rem)'
       }}
     >
       <div 
@@ -375,7 +375,7 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
               <h3 className="text-[#0C3068] text-[22px] font-black">معرفی محصول</h3>
               <div className="w-12 h-1 bg-[#F9B222] rounded-full"></div>
             </div>
-            <p className="text-[#374151] leading-[2.2] text-right font-medium text-[14px] line-clamp-5">
+            <p className="text-[#374151] leading-[1.95] text-right font-medium text-[13.5px]">
               {product.description}
             </p>
           </div>
@@ -393,7 +393,7 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
                 {product.features.slice(0, 5).map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <CheckCircle2 className="text-[#F9B222] shrink-0 mt-0.5" size={22} strokeWidth={2.5} />
-                    <span className="text-[#1F2937] font-bold text-[14px] leading-tight line-clamp-2">{feature}</span>
+                    <span className="text-[#1F2937] font-bold text-[13.5px] leading-snug">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -408,7 +408,7 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
                     <div className="w-10 h-10 flex items-center justify-center shrink-0">
                       {getIcon(app.icon)}
                     </div>
-                    <span className="text-[#1F2937] font-bold text-[14px] leading-tight">{app.label}</span>
+                    <span className="text-[#1F2937] font-bold text-[13.5px] leading-snug">{app.label}</span>
                   </div>
                 ))}
               </div>
@@ -451,19 +451,24 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
 
 export default function App() {
   useEffect(() => {
+    const isPrint = new URLSearchParams(window.location.search).has('print')
+      || window.matchMedia('print').matches;
+
     const handleResize = () => {
+      if (isPrint) {
+        document.documentElement.style.setProperty('--page-scale', '1');
+        return;
+      }
       const padding = window.innerWidth < 640 ? 24 : 64;
       const availableWidth = window.innerWidth - padding;
-      const targetWidth = 794; // A4 layout width in px
+      const targetWidth = 794;
       let newScale = 1;
-      
       if (availableWidth < targetWidth) {
         newScale = availableWidth / targetWidth;
       }
-      
       document.documentElement.style.setProperty('--page-scale', newScale.toString());
     };
-    
+
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -476,10 +481,26 @@ export default function App() {
       <div className="fixed bottom-6 right-6 z-50 print:hidden flex items-center gap-4 flex-row-reverse">
         <a 
           href="/catalog.pdf"
-          download="TSP-Catalog.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
+          download="catalog-toyooran.pdf"
           id="download-btn"
+          onClick={async (event) => {
+            event.preventDefault();
+            try {
+              const response = await fetch('/catalog.pdf');
+              if (!response.ok) throw new Error('pdf missing');
+              const blob = await response.blob();
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = 'catalog-toyooran.pdf';
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              URL.revokeObjectURL(url);
+            } catch {
+              window.location.href = '/catalog.pdf';
+            }
+          }}
           className="flex items-center gap-2 px-6 py-4 bg-[#0C3068] text-[#FFFFFF] rounded-full shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all hover:bg-[#0a2550] hover:-translate-y-1"
         >
           <Download size={22} />

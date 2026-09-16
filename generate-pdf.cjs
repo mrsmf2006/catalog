@@ -5,94 +5,127 @@ const http = require('http');
 const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
 
-const app = express();
-app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'dist/index.html')));
+const PORT = 4173;
+const DIST = path.join(__dirname, 'dist');
+const PUBLIC_PDF = path.join(__dirname, 'public', 'catalog.pdf');
+const DIST_PDF = path.join(DIST, 'catalog.pdf');
 
-const server = http.createServer(app);
-
-server.listen(4173, async () => {
-  console.log('Server started on 4173');
+async function launchBrowser() {
+  const chromePath = process.env.CHROME_PATH
+    || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+  const options = {
+    headless: true,
+    args: ['--disable-dev-shm-usage', '--font-render-hinting=none'],
+  };
+  if (fs.existsSync(chromePath)) {
+    console.log(`Using Chrome: ${chromePath}`);
+    return chromium.launch({ ...options, executablePath: chromePath });
+  }
   try {
-    const browser = await chromium.launch();
+    return await chromium.launch({ ...options, channel: 'msedge' });
+  } catch {
+    return chromium.launch({ ...options, channel: 'chrome' });
+  }
+}
+
+async function generate() {
+  if (!fs.existsSync(path.join(DIST, 'index.html'))) {
+    throw new Error('dist/index.html missing. Run `npx vite build` first.');
+  }
+
+  const app = express();
+  app.use(express.static(DIST));
+  app.get('*', (_req, res) => res.sendFile(path.join(DIST, 'index.html')));
+
+  const server = http.createServer(app);
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(PORT, resolve);
+  });
+  console.log(`Serving dist on http://localhost:${PORT}`);
+
+  let browser;
+  try {
+    browser = await launchBrowser();
     const page = await browser.newPage({
-      viewport: { width: 1200, height: 1600 }
+      viewport: { width: 1200, height: 1700 },
     });
-    
-    page.setDefaultTimeout(300000);
-    
-    console.log('Navigating to http://localhost:4173?print=true');
-    await page.goto('http://localhost:4173?print=true', { waitUntil: 'networkidle' });
-    
-    console.log('Waiting for images to load...');
+    page.setDefaultTimeout(180000);
+
+    const url = `http://127.0.0.1:${PORT}/?print=true`;
+    console.log(`Opening ${url}`);
+    await page.goto(url, { waitUntil: 'load', timeout: 120000 });
+
+    await page.waitForSelector('.catalog-page-container', { timeout: 60000 });
+    await page.waitForFunction(
+      () => document.querySelectorAll('.catalog-page-container').length > 20,
+      { timeout: 60000 }
+    );
+
     await page.evaluate(async () => {
       document.documentElement.style.setProperty('--page-scale', '1');
-      window.addEventListener('resize', (e) => {
-        e.stopPropagation();
-        document.documentElement.style.setProperty('--page-scale', '1');
-      }, true);
-      
+      document.documentElement.style.setProperty('--page-mb', '0px');
       await document.fonts.ready;
       const images = Array.from(document.images);
-      await Promise.all(images.map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-      }));
-      await new Promise(r => setTimeout(r, 2000));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
     });
-    
-    await page.addStyleTag({ content: '.print\\:hidden, #download-btn { display: none !important; }' });
-    
-    console.log('Generating PDF from screenshots...');
-    
-    const pageElements = await page.$$('.catalog-page-container');
-    console.log(`Found ${pageElements.length} pages to process.`);
-    
+
+    const pageCount = await page.$$eval(
+      '.catalog-page-container',
+      (els) => els.length
+    );
+    console.log(`Catalog pages ready: ${pageCount}`);
+
+    await page.emulateMedia({ media: 'print' });
+
     const pdfDoc = await PDFDocument.create();
-    
-    for (let i = 0; i < pageElements.length; i++) {
-      console.log(`Processing page ${i + 1}/${pageElements.length}...`);
-      const el = pageElements[i];
-      
-      const screenshotBuffer = await el.screenshot({ 
-        type: 'jpeg', 
-        quality: 85
+    const pageHandles = await page.$$('.catalog-page-container');
+    const a4Width = 595.28;
+    const a4Height = 841.89;
+
+    for (let i = 0; i < pageHandles.length; i++) {
+      process.stdout.write(`\rRendering page ${i + 1}/${pageHandles.length}   `);
+      const screenshotBuffer = await pageHandles[i].screenshot({
+        type: 'jpeg',
+        quality: 82,
+        animations: 'disabled',
       });
-      
       const img = await pdfDoc.embedJpg(screenshotBuffer);
-      
-      // A4 dimensions in points (72 points per inch)
-      const a4Width = 595.28;
-      const a4Height = 841.89;
-      
       const pdfPage = pdfDoc.addPage([a4Width, a4Height]);
       pdfPage.drawImage(img, {
         x: 0,
         y: 0,
         width: a4Width,
-        height: a4Height
+        height: a4Height,
       });
     }
-    
-    console.log('Saving PDF...');
+    console.log('');
+
     const pdfBytes = await pdfDoc.save();
-    
-    const pdfPath = path.join(__dirname, 'dist/catalog.pdf');
-    fs.writeFileSync(pdfPath, pdfBytes);
-    
-    console.log('PDF generated successfully at dist/catalog.pdf');
-    
-    fs.copyFileSync(pdfPath, path.join(__dirname, 'public/catalog.pdf'));
-    console.log('Copied PDF to public/catalog.pdf');
-    
-    await browser.close();
-  } catch (err) {
-    console.error('Error generating PDF:', err);
+    fs.writeFileSync(DIST_PDF, pdfBytes);
+    fs.mkdirSync(path.dirname(PUBLIC_PDF), { recursive: true });
+    fs.copyFileSync(DIST_PDF, PUBLIC_PDF);
+
+    const mb = (pdfBytes.length / (1024 * 1024)).toFixed(2);
+    console.log(`PDF saved: ${DIST_PDF} (${mb} MB, ${pageCount} pages)`);
+    console.log(`Copied to: ${PUBLIC_PDF}`);
   } finally {
-    server.close();
-    process.exit(0);
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
   }
-});
+}
+
+generate()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('Error generating PDF:', err);
+    process.exit(1);
+  });

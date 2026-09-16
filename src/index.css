@@ -14,17 +14,46 @@
     margin: 0;
     size: A4 portrait;
   }
-  
+
+  html,
+  body,
+  #root {
+    width: 210mm;
+    margin: 0;
+    padding: 0;
+    background: #ffffff !important;
+  }
+
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    margin: 0;
-    padding: 0;
   }
 
   :root {
     --page-scale: 1 !important;
-    --page-mb: 0 !important;
+    --page-mb: 0px !important;
+  }
+
+  .catalog-page-shell {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .catalog-page-container {
+    position: static !important;
+    transform: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    box-shadow: none !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .catalog-page-shell:last-child .catalog-page-container {
+    break-after: auto;
+    page-break-after: auto;
   }
 }
 
