@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build && node generate-pdf.cjs",
-    "pdf": "vite build && node generate-pdf.cjs",
+    "build": "vite build",
+    "pdf": "node generate-pdf.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

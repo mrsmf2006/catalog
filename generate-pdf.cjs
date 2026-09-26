@@ -5,12 +5,12 @@ const http = require('http');
 const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
 
-const PORT = 4173;
+const PORT = Number(process.env.PDF_PORT || 4173);
 const DIST = path.join(__dirname, 'dist');
 const PUBLIC_PDF = path.join(__dirname, 'public', 'catalog.pdf');
 const DIST_PDF = path.join(DIST, 'catalog.pdf');
 
-async function launchBrowser() {
+function launchBrowser() {
   const chromePath = process.env.CHROME_PATH
     || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
   const options = {
@@ -21,45 +21,77 @@ async function launchBrowser() {
     console.log(`Using Chrome: ${chromePath}`);
     return chromium.launch({ ...options, executablePath: chromePath });
   }
-  try {
-    return await chromium.launch({ ...options, channel: 'msedge' });
-  } catch {
-    return chromium.launch({ ...options, channel: 'chrome' });
-  }
+  return chromium.launch({ ...options, channel: 'chrome' }).catch(() =>
+    chromium.launch({ ...options, channel: 'msedge' })
+  );
 }
 
-async function generate() {
-  if (!fs.existsSync(path.join(DIST, 'index.html'))) {
-    throw new Error('dist/index.html missing. Run `npx vite build` first.');
-  }
+function probe(url) {
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      res.resume();
+      resolve(res.statusCode && res.statusCode < 500);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(2500, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
 
+async function startDistServer() {
+  if (!fs.existsSync(path.join(DIST, 'index.html'))) {
+    throw new Error('dist/index.html missing. Run `npx vite build` or start `npm run dev`.');
+  }
   const app = express();
   app.use(express.static(DIST));
   app.get('*', (_req, res) => res.sendFile(path.join(DIST, 'index.html')));
-
   const server = http.createServer(app);
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(PORT, resolve);
   });
-  console.log(`Serving dist on http://localhost:${PORT}`);
+  return {
+    url: `http://127.0.0.1:${PORT}/?print=true`,
+    close: () => new Promise((resolve) => server.close(resolve)),
+  };
+}
 
+async function resolveCatalog() {
+  const fromEnv = process.env.CATALOG_URL;
+  if (fromEnv) {
+    return { url: fromEnv, close: async () => {} };
+  }
+
+  const live = 'http://127.0.0.1:3000/?print=true';
+  if (await probe('http://127.0.0.1:3000/')) {
+    console.log('Using live Vite server on port 3000');
+    return { url: live, close: async () => {} };
+  }
+
+  console.log(`Serving dist on http://localhost:${PORT}`);
+  return startDistServer();
+}
+
+async function generate() {
+  const catalog = await resolveCatalog();
   let browser;
+
   try {
     browser = await launchBrowser();
     const page = await browser.newPage({
       viewport: { width: 1200, height: 1700 },
+      deviceScaleFactor: 1,
     });
     page.setDefaultTimeout(180000);
 
-    const url = `http://127.0.0.1:${PORT}/?print=true`;
-    console.log(`Opening ${url}`);
-    await page.goto(url, { waitUntil: 'load', timeout: 120000 });
-
+    console.log(`Opening ${catalog.url}`);
+    await page.goto(catalog.url, { waitUntil: 'load', timeout: 120000 });
     await page.waitForSelector('.catalog-page-container', { timeout: 60000 });
     await page.waitForFunction(
       () => document.querySelectorAll('.catalog-page-container').length > 20,
-      { timeout: 60000 }
+      { timeout: 90000 }
     );
 
     await page.evaluate(async () => {
@@ -85,6 +117,9 @@ async function generate() {
     console.log(`Catalog pages ready: ${pageCount}`);
 
     await page.emulateMedia({ media: 'print' });
+    await page.addStyleTag({
+      content: '.print\\:hidden, #download-btn { display: none !important; }',
+    });
 
     const pdfDoc = await PDFDocument.create();
     const pageHandles = await page.$$('.catalog-page-container');
@@ -95,7 +130,8 @@ async function generate() {
       process.stdout.write(`\rRendering page ${i + 1}/${pageHandles.length}   `);
       const screenshotBuffer = await pageHandles[i].screenshot({
         type: 'jpeg',
-        quality: 82,
+        quality: 62,
+        scale: 'css',
         animations: 'disabled',
       });
       const img = await pdfDoc.embedJpg(screenshotBuffer);
@@ -110,6 +146,7 @@ async function generate() {
     console.log('');
 
     const pdfBytes = await pdfDoc.save();
+    fs.mkdirSync(DIST, { recursive: true });
     fs.writeFileSync(DIST_PDF, pdfBytes);
     fs.mkdirSync(path.dirname(PUBLIC_PDF), { recursive: true });
     fs.copyFileSync(DIST_PDF, PUBLIC_PDF);
@@ -119,7 +156,7 @@ async function generate() {
     console.log(`Copied to: ${PUBLIC_PDF}`);
   } finally {
     if (browser) await browser.close();
-    await new Promise((resolve) => server.close(resolve));
+    await catalog.close();
   }
 }
 

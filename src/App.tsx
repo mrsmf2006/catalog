@@ -450,6 +450,8 @@ const CatalogPage: React.FC<{ product: Product, pageNum: number }> = ({ product,
 };
 
 export default function App() {
+  const [pdfBusy, setPdfBusy] = useState(false);
+
   useEffect(() => {
     const isPrint = new URLSearchParams(window.location.search).has('print')
       || window.matchMedia('print').matches;
@@ -479,15 +481,16 @@ export default function App() {
       
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-50 print:hidden flex items-center gap-4 flex-row-reverse">
-        <a 
-          href="/catalog.pdf"
-          download="catalog-toyooran.pdf"
+        <button
+          type="button"
           id="download-btn"
-          onClick={async (event) => {
-            event.preventDefault();
+          disabled={pdfBusy}
+          onClick={async () => {
+            if (pdfBusy) return;
+            setPdfBusy(true);
             try {
-              const response = await fetch('/catalog.pdf');
-              if (!response.ok) throw new Error('pdf missing');
+              const response = await fetch('/api/generate-pdf');
+              if (!response.ok) throw new Error('pdf generate failed');
               const blob = await response.blob();
               const url = URL.createObjectURL(blob);
               const link = document.createElement('a');
@@ -499,13 +502,17 @@ export default function App() {
               URL.revokeObjectURL(url);
             } catch {
               window.location.href = '/catalog.pdf';
+            } finally {
+              setPdfBusy(false);
             }
           }}
-          className="flex items-center gap-2 px-6 py-4 bg-[#0C3068] text-[#FFFFFF] rounded-full shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all hover:bg-[#0a2550] hover:-translate-y-1"
+          className="flex items-center gap-2 px-6 py-4 bg-[#0C3068] text-[#FFFFFF] rounded-full shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all hover:bg-[#0a2550] hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0"
         >
           <Download size={22} />
-          <span className="font-bold text-lg hidden sm:inline">دانلود PDF آفلاین</span>
-        </a>
+          <span className="font-bold text-lg hidden sm:inline">
+            {pdfBusy ? 'در حال ساخت PDF...' : 'دانلود PDF آفلاین'}
+          </span>
+        </button>
         
         <a 
           href="https://toyooran.com"
